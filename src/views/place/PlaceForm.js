@@ -10,6 +10,7 @@ import { connect } from 'react-redux';
 import Dialog from 'material-ui/Dialog';
 import Slide from 'material-ui/transitions/Slide';
 import QRCode from 'qrcode.react';
+import Dropzone from 'react-dropzone';
 
 import Panel from './../../components/Panel';
 import Loader from './../../components/Loader';
@@ -27,6 +28,8 @@ class PlaceForm extends Component {
             codes: [],
             busy: true,
             dialogOpen: false,
+            file: null,
+            image: ''
         }
     }
     
@@ -55,6 +58,7 @@ class PlaceForm extends Component {
                 }
             }),
             busy: false,
+            image: data.image
         })
     }
 
@@ -87,17 +91,17 @@ class PlaceForm extends Component {
 
     _onSubmit(e) {
         e.preventDefault();
-        const { name, city, street, codes } = this.state;
+        const { name, city, street, codes, file, image } = this.state;
 
         this.setState({ busy: true });
 
         if(!this.placeKey) {
             // create new place
-            const newPlaceKey = api.place.addPlace({ name, city, street, codes });
+            const newPlaceKey = api.place.addPlace({ name, city, street, codes, file });
             if(newPlaceKey) this.props.history.push('/places/'+newPlaceKey);
         } else {
             //save place
-            api.place.updatePlace(this.placeKey, { name, city, street, codes })
+            api.place.updatePlace(this.placeKey, { name, city, street, codes, file, image })
                 .then(snapshot => {
                     this._setPlaceData(snapshot.val()); 
                     this.setState({ busy: false });
@@ -138,9 +142,27 @@ class PlaceForm extends Component {
             </Dialog>
         );
     }
+
+    _onFileSelected(files) {
+        if(files.length > 0) {
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                this.setState({
+                    file: file,
+                    image: reader.result
+                })
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    _unsetImage() {
+
+    }
     
 	render() {
-        const { busy, name, city, street, codes } = this.state;
+        const { busy, name, city, street, codes, image } = this.state;
 
         if(busy) return <Loader size="100px" color="#d6dbe0" center />
 
@@ -148,33 +170,52 @@ class PlaceForm extends Component {
             <form ref="placeForm" onSubmit={this._onSubmit.bind(this)}>
                 <Panel>
                     <Header>Place name & address</Header>
-                    <TextField
-                        name="name"
-                        label="Place name"
-                        value={name}
-                        onChange={this._handleChange('name')}
-                        margin="normal"
-                        style={{width: '32%'}}
-                        required
-                    />
-                    <TextField
-                        name="city"
-                        label="City"
-                        value={city}
-                        onChange={this._handleChange('city')}
-                        margin="normal"
-                        style={{marginRight: '2%', marginLeft: '2%', width: '32%'}}
-                        required
-                    />
-                    <TextField
-                        name="street"
-                        label="Street"
-                        value={street}
-                        onChange={this._handleChange('street')}
-                        margin="normal"
-                        style={{width: '32%'}}
-                        required
-                    />                    
+                    <PlaceInfoSection>
+                        <DetailsSection>
+                            <TextField
+                                name="name"
+                                label="Place name"
+                                value={name}
+                                onChange={this._handleChange('name')}
+                                margin="normal"
+                                fullWidth
+                                required
+                            />
+                            <TextField
+                                name="city"
+                                label="City"
+                                value={city}
+                                onChange={this._handleChange('city')}
+                                margin="normal"
+                                fullWidth
+                                required
+                            />
+                            <TextField
+                                name="street"
+                                label="Street"
+                                value={street}
+                                onChange={this._handleChange('street')}
+                                margin="normal"
+                                fullWidth
+                                required
+                            /> 
+                        </DetailsSection>
+                        <ImageSection>
+                            {image ? (
+                                <ImagePreview image={image} >
+                                    <RemoveCircleOutline color="error" onClick={() => this._unsetImage()} />
+                                </ImagePreview>
+                            ) : (
+                                <SelectFile activeClassName="active" rejectClassName="rejected" multiple={false} onDrop={this._onFileSelected.bind(this)} accept="image/*">
+                                    {({ isDragActive, isDragReject, acceptedFiles, rejectedFiles }) => {
+                                        if(isDragReject) return <span>File type not allowed</span>
+                                        if(isDragActive) return <span>Drop file</span>
+                                        return <span>Drop file or click to sellect</span>
+                                    }}
+                                </SelectFile>
+                            )}
+                        </ImageSection>
+                    </PlaceInfoSection>                   
                 </Panel>
 
                 <Panel>
@@ -241,4 +282,57 @@ const Header = styled.h2`
 
 const CodeWrapper = styled.div`
     padding: 20px 20px 18px;
+`
+
+const PlaceInfoSection = styled.div`
+    display: flex;
+    justify-content: space-between;
+`
+
+const DetailsSection = styled.div`
+    width: 55%;
+`
+
+const ImageSection = styled.div`
+    width:40%;
+`
+
+const SelectFile = styled(Dropzone)`
+    width:100%;
+    padding-top: 56.25%;
+    border:2px dashed #949494;
+    position:relative;
+    cursor:pointer;
+    transition:all .2s ease-in-out;
+    &.active {
+        border:2px dashed #3748AC;
+    }
+    &.rejected {
+        border:2px dashed #f00;
+    }
+    span {
+        position:absolute;
+        color: #949494;
+        top:50%;
+        left:50%;
+        transform: translateX(-50%) translateY(-50%);
+    }
+`
+
+const ImagePreview = styled.div`
+    width:100%;
+    padding-top: 56.25%;
+    position:relative;
+    background-image: url(${props => props.image});
+    background-size: cover;
+    background-position: center center;
+    position: relative;
+    svg {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        background: #fff;
+        border-radius: 20px;
+        cursor:pointer;
+    }
 `

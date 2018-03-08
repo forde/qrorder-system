@@ -56,25 +56,39 @@ class MenuForm extends Component {
     }
 
     _handleSectionNameChange(e, sectionIndex) {
-        const update = {...this.state.menu};
-        update.sections = [...update.sections]
-        update.sections[sectionIndex].name = e.target.value
-        this.setState({ menu: update });
+        this.setState({ 
+            menu: { ...this.state.menu, 
+                sections: this.state.menu.sections.map((section, sI) => {
+                    if(sI !== sectionIndex) return section;
+                    return { ...section, name: e.target.value }
+                })
+            } 
+        });
     }
 
     _onDishChange(val, sectionIndex, dishIndex, key) {
-        console.log(val, sectionIndex, dishIndex, key)
-        const update = {...this.state.menu}
-        update.sections = [...update.sections]
-        update.sections[sectionIndex].dishes = [...update.sections[sectionIndex].dishes, {...this.emptyDish}]
-        update.sections[sectionIndex].dishes[dishIndex] = [...update.sections[sectionIndex].dishes[dishIndex]]
-        update.sections[sectionIndex].dishes[dishIndex][key] = val
-        this.setState({ menu: update });
+        this.setState({ 
+            menu: { ...this.state.menu, 
+                sections: this.state.menu.sections.map((section, sI) => {
+                    if(sI !== sectionIndex) return section;
+                    return { ...section, dishes: section.dishes.map((dish, dI) => {
+                        if(dI !== dishIndex) return dish;
+                        return { ...dish, [key]: val}
+                    })}
+                })
+            } 
+        });
     }
 
     _addSection() {
         const update = {...this.state.menu};
         update.sections = [...update.sections, {...this.emptySection}]
+        this.setState({ menu: update });
+    }
+
+    _removeSection(sectionIndex) {
+        const update = {...this.state.menu};
+        update.sections = update.sections.filter((section, sI) => sI !== sectionIndex)
         this.setState({ menu: update });
     }
 
@@ -85,8 +99,24 @@ class MenuForm extends Component {
         this.setState({ menu: update });
     }
 
-    _onSubmit(e) {
+    _removeDish(sectionIndex, dishIndex) {
+        const update = {...this.state.menu}
+        update.sections = [...update.sections]
+        update.sections[sectionIndex].dishes = update.sections[sectionIndex].dishes.filter((dish, dI) => dI !== dishIndex);
+        this.setState({ menu: update });
+    }
 
+    _onSubmit(e) {
+        e.preventDefault();
+        this.setState({ busy: true });
+
+        api.menu.updateMenu(this.placeKey, this.state.menu)
+            .then(snapshot => {
+                this.setState({ 
+                    menu: snapshot.val(),
+                    busy: false 
+                });
+            });
     }
 
     render() {
@@ -100,7 +130,7 @@ class MenuForm extends Component {
             <form ref="menuForm" onSubmit={this._onSubmit.bind(this)}>
                 {menu.sections.map((section, i) => {
                     return (
-                        <Panel key={i}>
+                        <Panel key={i} style={{position:'relative'}}>
                             <TextField
                                 name="name"
                                 label="Section name"
@@ -110,10 +140,20 @@ class MenuForm extends Component {
                                 fullWidth={true}
                                 required
                             />
-                            <Dishes dishes={section.dishes} sectionIndex={i} onDishChange={this._onDishChange.bind(this)} onAddDish={() => this._addDish.bind(this)(i)} />
+                            <RemoveSectionBtn color="error" onClick={() => this._removeSection.bind(this)(i)} />
+                            <Dishes 
+                                dishes={section.dishes} 
+                                sectionIndex={i} 
+                                onDishChange={this._onDishChange.bind(this)} 
+                                onAddDish={() => this._addDish.bind(this)(i)} 
+                                onRemoveDish={this._removeDish.bind(this)}
+                            />
                         </Panel>
                     )
                 })}
+                <Button color="primary" component={props => <button {...props} />} variant="raised">
+                    Save menu settings
+                </Button>
                 <Button style={{float: 'right'}} onClick={this._addSection.bind(this)} variant="raised">
                     Add menu section
                 </Button>
@@ -159,6 +199,7 @@ const Dishes = props => {
                             checked={dish.available}
                             onChange={(e, checked) => props.onDishChange(checked, props.sectionIndex, i, 'available')}
                         />
+                        <RemoveDishBtn color="error" onClick={() => props.onRemoveDish(props.sectionIndex, i)} />
                         <TextField
                             name="description"
                             label="Description"
@@ -187,4 +228,20 @@ const Dish = styled.div`
     margin-bottom: 20px;
     padding: 8px 20px 15px;
     background: #f7f7f7;
+    position: relative;
+`
+
+const RemoveSectionBtn = styled(RemoveCircleOutline)`
+    position: absolute;
+    cursor: pointer;
+    top: 8px;
+    right: 8px;
+`
+
+const RemoveDishBtn = styled(RemoveCircleOutline)`
+    position: absolute; 
+    left: -48px; 
+    top: 50%; 
+    margin-top: -12px; 
+    cursor: pointer;
 `
