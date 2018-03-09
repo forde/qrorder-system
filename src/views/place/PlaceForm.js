@@ -9,6 +9,7 @@ import RemoveCircleOutline from 'material-ui-icons/RemoveCircleOutline';
 import { connect } from 'react-redux';
 import Dialog from 'material-ui/Dialog';
 import Slide from 'material-ui/transitions/Slide';
+import Switch from 'material-ui/Switch';
 import QRCode from 'qrcode.react';
 import Dropzone from 'react-dropzone';
 
@@ -25,6 +26,7 @@ class PlaceForm extends Component {
             name: '',
             city: '',
             street: '',
+            acceptingOrders: false,
             codes: [],
             busy: true,
             dialogOpen: false,
@@ -51,6 +53,7 @@ class PlaceForm extends Component {
             name: data.name,
             city: data.city,
             street: data.street,
+            acceptingOrders: data.acceptingOrders || false,
             codes: !data.codes ? [] : Object.keys(data.codes).map(key => {
                 return {
                     id: key,
@@ -77,6 +80,10 @@ class PlaceForm extends Component {
         }
     }
 
+    _handleCheckboxChange = name => (event, checked) => {
+        this.setState({ [name]: checked });
+    }
+
     _addCode() {
         this.setState({
             codes: [...this.state.codes, { description: ''}]
@@ -91,17 +98,17 @@ class PlaceForm extends Component {
 
     _onSubmit(e) {
         e.preventDefault();
-        const { name, city, street, codes, file, image } = this.state;
+        const { name, city, street, acceptingOrders, codes, file, image } = this.state;
 
         this.setState({ busy: true });
 
         if(!this.placeKey) {
             // create new place
-            const newPlaceKey = api.place.addPlace({ name, city, street, codes, file });
-            if(newPlaceKey) this.props.history.push('/places/'+newPlaceKey);
+            api.place.addPlace({ name, city, street, acceptingOrders, codes, file })
+                .then(key => this.props.history.push('/places/'+key));
         } else {
             //save place
-            api.place.updatePlace(this.placeKey, { name, city, street, codes, file, image })
+            api.place.updatePlace(this.placeKey, { name, city, street, acceptingOrders, codes, file, image })
                 .then(snapshot => {
                     this._setPlaceData(snapshot.val()); 
                     this.setState({ busy: false });
@@ -147,58 +154,69 @@ class PlaceForm extends Component {
         if(files.length > 0) {
             const file = files[0];
             const reader = new FileReader();
-            reader.onload = () => {
-                this.setState({
-                    file: file,
-                    image: reader.result
-                })
+            reader.onload = (e) => {
+
+                // resize image
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0);
+
+                    const maxWidth = 800;
+                    const maxheight = 600;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxheight) {
+                            width *= maxheight / height;
+                            height = maxheight;
+                        }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // set image data url for preview
+                    this.setState({ image: canvas.toDataURL(file.type) });
+                    
+                    canvas.toBlob(blob => {
+                        blob.name = file.name;
+                        // set file blob to be saved later
+                        this.setState({ file: blob });
+                    }, file.type, .8);
+                }
             }
             reader.readAsDataURL(file);
         }
     }
 
     _unsetImage() {
-
+        this.setState({ file: null, image: '' });
     }
     
 	render() {
-        const { busy, name, city, street, codes, image } = this.state;
+        const { busy, name, city, street, acceptingOrders, codes, image } = this.state;
 
         if(busy) return <Loader size="100px" color="#d6dbe0" center />
 
 		return (
             <form ref="placeForm" onSubmit={this._onSubmit.bind(this)}>
                 <Panel>
-                    <Header>Place name & address</Header>
+                    <Header>Place settings</Header>
                     <PlaceInfoSection>
                         <DetailsSection>
-                            <TextField
-                                name="name"
-                                label="Place name"
-                                value={name}
-                                onChange={this._handleChange('name')}
-                                margin="normal"
-                                fullWidth
-                                required
-                            />
-                            <TextField
-                                name="city"
-                                label="City"
-                                value={city}
-                                onChange={this._handleChange('city')}
-                                margin="normal"
-                                fullWidth
-                                required
-                            />
-                            <TextField
-                                name="street"
-                                label="Street"
-                                value={street}
-                                onChange={this._handleChange('street')}
-                                margin="normal"
-                                fullWidth
-                                required
-                            /> 
+                            <TextField name="name" label="Place name" value={name} onChange={this._handleChange('name')} margin="normal" fullWidth required />
+                            <TextField name="city" label="City" value={city} onChange={this._handleChange('city')} margin="normal" fullWidth required />
+                            <TextField name="street" label="Street" value={street} onChange={this._handleChange('street')} margin="normal" fullWidth required /> 
+                            <Switch onChange={this._handleCheckboxChange('acceptingOrders')} value="1" checked={acceptingOrders} className="switch" /><span>Ready to accept orders</span>
                         </DetailsSection>
                         <ImageSection>
                             {image ? (
@@ -291,6 +309,14 @@ const PlaceInfoSection = styled.div`
 
 const DetailsSection = styled.div`
     width: 55%;
+    .switch {
+        margin: 0 0 0px -14px;
+        bottom: -10px;
+        &+span {
+            position:relative;
+            top:12px;
+        }
+    }
 `
 
 const ImageSection = styled.div`

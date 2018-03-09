@@ -4,7 +4,7 @@ export const getPlaces = () => {
     return firebase.database().ref('/places').once('value');
 }
 
-export const addPlace = async ({ name, city, street, codes, file }) => {
+export const addPlace = async ({ name, city, street, acceptingOrders, codes, file }) => {
     const placesRef = firebase.database().ref('/places');
     const newPlaceKey = placesRef.push().key;
 
@@ -18,7 +18,7 @@ export const addPlace = async ({ name, city, street, codes, file }) => {
             image = placeImagePath.metadata.downloadURLs[0];
     }
 
-    placesRef.child(newPlaceKey).update({ name, city, street, image });
+    placesRef.child(newPlaceKey).update({ name, city, street, acceptingOrders, image });
 
     codes.forEach(code => {
         const newCodeKey = placesRef.child(newPlaceKey+'/codes').push().key;
@@ -32,7 +32,7 @@ export const getPlace = key => {
     return firebase.database().ref('/places/'+key).once('value');
 }
 
-export const updatePlace = async (key, { name, city, street, codes, file, image }) => {
+export const updatePlace = async (key, { name, city, street, acceptingOrders, codes, file, image }) => {
     const placeRef = firebase.database().ref('/places/'+key);
     
     // save image
@@ -47,7 +47,7 @@ export const updatePlace = async (key, { name, city, street, codes, file, image 
     }
 
     // update place name, address
-    await placeRef.update({ name, city, street, image });
+    await placeRef.update({ name, city, street, acceptingOrders, image });
 
     // update place codes
     const usedCodeKeys = await Promise.all(codes.map(async code => {
