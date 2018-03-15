@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import RemoveCircleOutline from 'material-ui-icons/RemoveCircleOutline';
 import Switch from 'material-ui/Switch';
 import { connect } from 'react-redux';
+import uuid from 'uuid/v1';
 
 import Panel from './../../components/Panel';
 import Loader from './../../components/Loader';
@@ -25,7 +26,8 @@ class MenuForm extends Component {
             name: '',
             description: '',
             price: '',
-            available: true
+            available: true,
+            uuid: '',
         }
 
         this.emptySection = {
@@ -82,7 +84,9 @@ class MenuForm extends Component {
 
     _addSection() {
         const update = {...this.state.menu};
-        update.sections = [...update.sections, {...this.emptySection}]
+        const emptySection = {...this.emptySection};
+        emptySection.dishes[0] = {...this.emptyDish, uuid: uuid()}
+        update.sections = [...update.sections, emptySection];
         this.setState({ menu: update });
     }
 
@@ -95,7 +99,7 @@ class MenuForm extends Component {
     _addDish(sectionIndex) {
         const update = {...this.state.menu}
         update.sections = [...update.sections]
-        update.sections[sectionIndex].dishes = [...update.sections[sectionIndex].dishes, {...this.emptyDish}]
+        update.sections[sectionIndex].dishes = [...update.sections[sectionIndex].dishes, {...this.emptyDish, uuid: uuid()}]
         this.setState({ menu: update });
     }
 
@@ -209,6 +213,7 @@ const Dishes = props => {
                             fullWidth
                             required
                         />
+                        <Uuid defaultValue={'UUID: '+dish.uuid} readonly />
                     </Dish>
                 )
             })}
@@ -244,4 +249,12 @@ const RemoveDishBtn = styled(RemoveCircleOutline)`
     top: 50%; 
     margin-top: -12px; 
     cursor: pointer;
+`
+
+const Uuid = styled.input`
+    background: transparent;
+    border: none;
+    width: 100%;
+    color: #868686;
+    outline: none;
 `
