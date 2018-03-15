@@ -7,7 +7,7 @@
     "firebase": "^4.9.1",
     "material-ui": "^1.0.0-beta.32",
     "material-ui-icons": "^1.0.0-beta.17",
-    "qrcode.react": "^0.7.2",
+    "qrcode-react": "^0.1.16",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-dropzone": "^4.2.9",

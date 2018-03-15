@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="163px" height="163px" viewBox="0 0 163 163" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.1 (51147) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 6</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="163" height="163"></rect>
+    </defs>
+    <g id="App" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-6">
+            <g id="Rectangle-4">
+                <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
+                <rect stroke="#000000" stroke-width="8" x="4" y="4" width="155" height="155"></rect>
+            </g>
+            <g id="Group-5" transform="translate(13.000000, 15.000000)" fill="#000000">
+                <path d="M50.2355335,44.286014 L50.2355335,74.7152718 L73.1386013,74.7152718 C84.3644639,74.7152718 90.5157152,70.2627428 90.5157152,59.4689279 C90.5157152,48.6742558 84.3644639,44.286014 73.1386013,44.286014 L50.2355335,44.286014 Z M50.2355335,88 L37,88 L37,31 L72.8308678,31 C91.8992339,31 104,41.3039467 104,59.5002143 C104,74.4576945 92.1214858,87.9965714 73.5194215,87.9965714 L50.2355335,88 Z" id="Fill-21"></path>
+                <polygon id="Fill-22" points="37 125 50 125 50 84 37 84"></polygon>
+                <path d="M66.5,119.773162 C37.0781314,119.773162 13.2264077,95.9218686 13.2264077,66.5 C13.2264077,37.0777015 37.0781314,13.2264077 66.5,13.2264077 C95.9218686,13.2264077 119.773592,37.0777015 119.773592,66.5 C119.773592,95.9218686 95.9218686,119.773162 66.5,119.773162 M66.5,0 C29.7734953,0 0,29.7730655 0,66.5 C0,103.226935 29.7734953,133 66.5,133 C103.226935,133 133,103.226935 133,66.5 C133,29.7730655 103.226935,0 66.5,0" id="Fill-23"></path>
+                <polygon id="Fill-24" points="126 132 104.676444 131.979185 48 86.2135613 56.3769279 76"></polygon>
+            </g>
+        </g>
+    </g>
+</svg>

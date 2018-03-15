@@ -10,12 +10,13 @@ import { connect } from 'react-redux';
 import Dialog from 'material-ui/Dialog';
 import Slide from 'material-ui/transitions/Slide';
 import Switch from 'material-ui/Switch';
-import QRCode from 'qrcode.react';
+import QRCode from 'qrcode-react';
 import Dropzone from 'react-dropzone';
 
 import Panel from './../../components/Panel';
 import Loader from './../../components/Loader';
 import api from './../../api';
+import logoQR from './../../images/logoQR.svg';
 
 
 class PlaceForm extends Component {
@@ -143,7 +144,9 @@ class PlaceForm extends Component {
                         size={300}
                         bgColor="#fff"
                         fgcolor="#000"
-                        level="L" /* 'L' 'M' 'Q' 'H' */
+                        logo={logoQR}
+                        logoWidth={100}
+                        logoHeight={100}
                     />
                 </CodeWrapper>  
             </Dialog>
